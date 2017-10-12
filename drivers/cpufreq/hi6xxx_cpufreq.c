@@ -36,8 +36,8 @@
 #include "hi6xxx_cpufreq.h"
 
 
-#define ACTUAL_FREQ(cluster, freq)	((cluster == A7_CLUSTER) ? freq << 1 : freq)
-#define VIRT_FREQ(cluster, freq)	((cluster == A7_CLUSTER) ? freq >> 1 : freq)
+#define ACTUAL_FREQ(cluster, freq)	((cluster == A53_CLUSTER_1) ? freq << 1 : freq)
+#define VIRT_FREQ(cluster, freq)	((cluster == A53_CLUSTER_1) ? freq >> 1 : freq)
 
 static struct cpufreq_hi6xxx_smp_ops *hi6xxx_smp_ops;
 static struct clk *clk[MAX_CLUSTERS];

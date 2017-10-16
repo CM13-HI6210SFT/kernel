@@ -345,7 +345,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
 	if (ret) {
 		dev_err(cpu_dev, "%s: init_opp_table failed, cpu: %d, err: %d\n",
 				__func__, cpu_dev->id, ret);
-		goto atomic_dec;
+		goto out;
 	}
 
 #ifdef CONFIG_CPU_FREQ_NEW_TABLE

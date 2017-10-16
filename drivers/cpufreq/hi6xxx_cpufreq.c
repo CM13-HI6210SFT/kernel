@@ -354,7 +354,37 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
         dev_warn(cpu_dev, "%s: Unable to allocate frequency table\n", __func__);
         return -ENOMEM;
 	}
+#ifdef CONFIG_CPU_FREQ_NEW_TABLE_CL
+	freq_table[0][0].index = 0;
+	freq_table[0][0].frequency = 208000;
+	freq_table[0][1].index = 1;
+    freq_table[0][1].frequency = 432000;
+	freq_table[0][2].index = 2;
+    freq_table[0][2].frequency = 729000;
+	freq_table[0][3].index = 3;
+    freq_table[0][3].frequency = 960000;
+	freq_table[0][4].index = 4;
+    freq_table[0][4].frequency = 1200000;
+	freq_table[0][5].index = 5;
+    freq_table[0][5].frequency = 1500000;
+	freq_table[0][6].index = 6;
+    freq_table[0][6].frequency = CPUFREQ_TABLE_END;
 
+	freq_table[1][0].index = 0;
+	freq_table[1][0].frequency = 208000;
+	freq_table[1][1].index = 1;
+    freq_table[1][1].frequency = 432000;
+	freq_table[1][2].index = 2;
+    freq_table[1][2].frequency = 729000;
+	freq_table[1][3].index = 3;
+    freq_table[1][3].frequency = 960000;
+	freq_table[1][4].index = 4;
+    freq_table[1][4].frequency = 1200000;
+	freq_table[1][5].index = 5;
+    freq_table[1][5].frequency = 1500000;
+	freq_table[1][6].index = 6;
+    freq_table[1][6].frequency = CPUFREQ_TABLE_END;
+#else
 	freq_table[cluster][0].index = 0;
 	freq_table[cluster][0].frequency = 208000;
 	freq_table[cluster][1].index = 1;
@@ -369,6 +399,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
     freq_table[cluster][5].frequency = 1500000;
 	freq_table[cluster][6].index = 6;
     freq_table[cluster][6].frequency = CPUFREQ_TABLE_END;
+#endif
 #else
 	ret = opp_init_cpufreq_table(cpu_dev, &freq_table[cluster]);
 	if (ret) {

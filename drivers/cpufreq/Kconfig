@@ -375,4 +375,10 @@ config CPU_FREQ_NEW_TABLE
 	help
       Use new cpu_freq table with 1,5 Ghz
 
+config CPU_FREQ_NEW_TABLE_CL
+	depends on CPU_FREQ_NEW_TABLE
+	bool "New cpu_freq table with manual clusters"
+	help
+      New cpu_freq table with manual clusters
+
 endmenu

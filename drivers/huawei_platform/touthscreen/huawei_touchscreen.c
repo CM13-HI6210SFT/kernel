@@ -868,12 +868,12 @@ static int ts_wakeup_gesture_enable_cmd(u8 switch_value)
 	cmd.command = TS_WAKEUP_GESTURE_ENABLE;
 	cmd.cmd_param.prv_params = (void *)info;
 
-	if (TS_WORK == atomic_read(&g_ts_data.state)){
+/*	if (TS_WORK == atomic_read(&g_ts_data.state)){
 		TS_LOG_ERR("can not enable/disable wakeup_gesture when tp is working in normal mode\n");
 		error = -EINVAL;
 		goto out;
 	}
-
+*/
 	error = put_one_cmd(&cmd, SHORT_SYNC_TIMEOUT);
 	if (error) {
 		TS_LOG_ERR("%s: put cmd error :%d\n", __func__, error);

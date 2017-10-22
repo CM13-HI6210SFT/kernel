@@ -2040,7 +2040,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
 		case CPU_ONLINE:
 		case CPU_ONLINE_FROZEN:
 			cpufreq_add_dev(dev, NULL);
-			//kobject_uevent(&dev->kobj, KOBJ_ADD);
+			kobject_uevent(&dev->kobj, KOBJ_ADD);
 			cpufreq_update_policy(cpu);
 			break;
 		case CPU_DOWN_PREPARE:
@@ -2059,6 +2059,73 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
 static struct notifier_block __refdata cpufreq_cpu_notifier = {
     .notifier_call = cpufreq_cpu_callback,
 };
+
+/*********************************************************************
+ *               BOOST						     *
+ *********************************************************************
+static int cpufreq_boost_set_sw(int state)
+{
+	struct cpufreq_frequency_table *freq_table;
+	struct cpufreq_policy *policy;
+	int ret = -EINVAL;
+
+	list_for_each_entry(policy, &cpufreq_policy_list, policy_list) {
+		freq_table = cpufreq_frequency_get_table(policy->cpu);
+		if (freq_table) {
+			ret = cpufreq_frequency_table_cpuinfo(policy,
+							freq_table);
+			if (ret) {
+				pr_err("%s: Policy frequency update failed\n",
+				       __func__);
+				break;
+			}
+			policy->user_policy.max = policy->max;
+			__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+		}
+	}
+
+	return ret;
+}
+
+int cpufreq_boost_trigger_state(int state)
+{
+	unsigned long flags;
+	int ret = 0;
+
+	if (cpufreq_driver->boost_enabled == state)
+		return 0;
+
+	write_lock_irqsave(&cpufreq_driver_lock, flags);
+	cpufreq_driver->boost_enabled = state;
+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+
+	ret = cpufreq_driver->set_boost(state);
+	if (ret) {
+		write_lock_irqsave(&cpufreq_driver_lock, flags);
+		cpufreq_driver->boost_enabled = !state;
+		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+
+		pr_err("%s: Cannot %s BOOST\n",
+		       __func__, state ? "enable" : "disable");
+	}
+
+	return ret;
+}
+
+int cpufreq_boost_supported(void)
+{
+	if (likely(cpufreq_driver))
+		return cpufreq_driver->boost_supported;
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
+
+int cpufreq_boost_enabled(void)
+{
+	return cpufreq_driver->boost_enabled;
+}
+EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);*/
 
 /*********************************************************************
  *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
@@ -2099,6 +2166,24 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 	cpufreq_driver = driver_data;
 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
+#if 0 
+		if (cpufreq_boost_supported()) {
+		/*
+		 * Check if driver provides function to enable boost -
+		 * if not, use cpufreq_boost_set_sw as default
+		 */
+		if (!cpufreq_driver->set_boost)
+			cpufreq_driver->set_boost = cpufreq_boost_set_sw;
+
+		ret = cpufreq_sysfs_create_file(&boost.attr);
+		if (ret) {
+			pr_err("%s: cannot register global BOOST sysfs file\n",
+			       __func__);
+			goto err_null_driver;
+		}
+	}
+#endif
+
 	ret = subsys_interface_register(&cpufreq_interface);
 	if (ret)
 		goto err_null_driver;
@@ -2117,7 +2202,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 		/* if all ->init() calls failed, unregister */
 		if (ret) {
 			pr_debug("no CPU initialized for driver %s\n",
-							driver_data->name);
+				 driver_data->name);
 			goto err_if_unreg;
 		}
 	}
@@ -2128,6 +2213,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 	return 0;
 err_if_unreg:
 	subsys_interface_unregister(&cpufreq_interface);
+//err_boost_unreg:
+//	if (cpufreq_boost_supported())
+//		cpufreq_sysfs_remove_file(&boost.attr);
 err_null_driver:
 	write_lock_irqsave(&cpufreq_driver_lock, flags);
 	cpufreq_driver = NULL;
@@ -2155,6 +2243,8 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
 	pr_debug("unregistering driver %s\n", driver->name);
 
 	subsys_interface_unregister(&cpufreq_interface);
+//	if (cpufreq_boost_supported())
+//		cpufreq_sysfs_remove_file(&boost.attr);
 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
 
 	write_lock_irqsave(&cpufreq_driver_lock, flags);

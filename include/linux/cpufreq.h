@@ -113,7 +113,9 @@ struct cpufreq_policy {
 					 * called, but you're in IRQ context */
 
 	struct cpufreq_real_policy	user_policy;
-
+	struct cpufreq_frequency_table	*freq_table;
+ 
+	struct list_head        policy_list;
 	struct kobject		kobj;
 	struct completion	kobj_unregister;
 };
@@ -263,6 +265,11 @@ struct cpufreq_driver {
 	int	(*suspend)	(struct cpufreq_policy *policy);
 	int	(*resume)	(struct cpufreq_policy *policy);
 	struct freq_attr	**attr;
+
+	/* platform specific boost support code */
+	bool		boost_supported;
+	bool		boost_enabled;
+	int		(*set_boost)(int state);
 };
 
 /* flags */
@@ -420,9 +427,12 @@ extern struct cpufreq_governor cpufreq_gov_interactive;
 
 #define CPUFREQ_ENTRY_INVALID ~0
 #define CPUFREQ_TABLE_END     ~1
-
-struct cpufreq_frequency_table {
+#define CPUFREQ_BOOST_FREQ	(1 << 0)
+ 
+ struct cpufreq_frequency_table {
 	unsigned int	index;     /* any */
+	unsigned int	flags;
+	unsigned int	driver_data; /* driver specific data, not used by core */
 	unsigned int	frequency; /* kHz - doesn't need to be in ascending
 				    * order */
 };
@@ -439,6 +449,24 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
 				   unsigned int relation,
 				   unsigned int *index);
 
+#ifdef CONFIG_CPU_FREQ
+int cpufreq_boost_trigger_state(int state);
+int cpufreq_boost_supported(void);
+int cpufreq_boost_enabled(void);
+#else
+static inline int cpufreq_boost_trigger_state(int state)
+{
+	return 0;
+}
+static inline int cpufreq_boost_supported(void)
+{
+	return 0;
+}
+static inline int cpufreq_boost_enabled(void)
+{
+	return 0;
+}
+#endif
 /* the following 3 funtions are for cpufreq core use only */
 struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
 

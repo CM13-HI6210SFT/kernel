@@ -118,7 +118,7 @@ struct cyttsp5_wakeup_keys {
 };
 
 enum cyttsp5_gesture_num {
-    GESTURE_DOUBLE_CLICK = 0,
+    GESTURE_DOUBLE_CLICK = 1,
     GESTURE_SLIDE_L2R,
     GESTURE_SLIDE_R2L,
     GESTURE_SLIDE_T2B,

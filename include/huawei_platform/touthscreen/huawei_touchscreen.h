@@ -250,7 +250,7 @@ enum ts_gesture_num {
 };
 /* END   PN: DTS2014091703080,Added by l00216194, 2014/09/18*/
 enum ts_gesture_enable_bit {
-	GESTURE_DOUBLE_CLICK = 1,
+	GESTURE_DOUBLE_CLICK = 0,
 	GESTURE_SLIDE_L2R,
 	GESTURE_SLIDE_R2L,
 	GESTURE_SLIDE_T2B,

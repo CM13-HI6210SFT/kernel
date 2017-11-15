@@ -121,6 +121,7 @@ struct ion_client *hisi_ion_client_create(const char *name)
 
 EXPORT_SYMBOL(hisi_ion_client_create);
 
+
 static int __init get_id_by_name(const char *name, unsigned int *id)
 {
     int i, n;
